@@ -15,6 +15,7 @@ import (
 )
 
 type FireflyService struct {
+	Config   services.Config
 	Pushover *services.PushoverService
 }
 
@@ -37,7 +38,7 @@ func (s FireflyService) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		transaction := data.Content.Transactions[0]
 		title := "Firefly III - Pagamento rata salvato"
 		message := fmt.Sprintf("Descrizione: %s | Cifra: %s | Id: %v", transaction.Description, transaction.Amount, transaction.RecurrenceID)
-		s.Pushover.Send(title, message)
+		s.Pushover.Send(title, message, s.Config.FireflyPushoverToken)
 	}
 
 	w.WriteHeader(http.StatusOK)

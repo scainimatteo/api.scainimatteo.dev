@@ -13,14 +13,7 @@ import (
 	"api.scainimatteo.dev/vikunja"
 )
 
-// Config definisce la struttura del file config.json
-type Config struct {
-	PushoverToken string `json:"pushover_token"`
-	PushoverUser  string `json:"pushover_user"`
-	Port          string `json:"port"`
-}
-
-var config Config
+var config services.Config
 
 func main() {
 	// 1. Carica la configurazione
@@ -30,13 +23,14 @@ func main() {
 	}
 
 	pushover := services.PushoverService{
-		Token: config.PushoverToken,
-		User:  config.PushoverUser,
+		User: config.PushoverUser,
 	}
 	fireflyService := firefly.FireflyService{
+		Config:   config,
 		Pushover: &pushover,
 	}
 	vikunjaService := vikunja.VikunjaService{
+		Config:   config,
 		Pushover: &pushover,
 	}
 

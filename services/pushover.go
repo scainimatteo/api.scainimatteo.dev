@@ -1,20 +1,20 @@
 package services
 
 import (
+	"io"
 	"log"
 	"net/http"
 	"net/url"
 )
 
 type PushoverService struct {
-	Token string
-	User  string
+	User string
 }
 
-func (s *PushoverService) Send(title, message string) {
+func (s *PushoverService) Send(title, message, token string) {
 	apiURL := "https://api.pushover.net/1/messages.json"
 	formData := url.Values{
-		"token":   {s.Token},
+		"token":   {token},
 		"user":    {s.User},
 		"message": {message},
 		"title":   {title},
@@ -30,5 +30,7 @@ func (s *PushoverService) Send(title, message string) {
 		log.Println("✅ Notifica inviata!")
 	} else {
 		log.Printf("⚠️ Errore Pushover Status: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("⚠️ Errore Pushover Body: %s", string(body))
 	}
 }

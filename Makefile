@@ -3,7 +3,8 @@ build: .FORCE
 
 deploy:
 	@make build
-	scp api.scainimatteo.dev pi:/home/pi/Projects/api.scainimatteo.dev
+	scp api.scainimatteo.dev pi:/home/pi/Projects/api.scainimatteo.dev/api.scainimatteo.dev.new
 	scp config.json pi:/home/pi/Projects/api.scainimatteo.dev
+	ssh pi "mv /home/pi/Projects/api.scainimatteo.dev/api.scainimatteo.dev.new /home/pi/Projects/api.scainimatteo.dev/api.scainimatteo.dev; sudo systemctl restart api.scainimatteo.dev"
 
 .FORCE:

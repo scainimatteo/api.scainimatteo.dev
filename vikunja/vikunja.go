@@ -2,13 +2,13 @@ package vikunja
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"api.scainimatteo.dev/services"
 )
 
 type VikunjaService struct {
+	Config   services.Config
 	Pushover *services.PushoverService
 }
 
@@ -18,14 +18,16 @@ func (s VikunjaService) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var data any
+	var data VikunjaWebhookResponse
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		http.Error(w, "Errore JSON", http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("Data: %v", data)
+	title := "Reminder - " + data.Data.Task.Title
+	message := "https://vikunja.scainimatteo.dev/projects/1/1"
+	s.Pushover.Send(title, message, s.Config.VikunjaPushoverToken)
 
 	w.WriteHeader(http.StatusOK)
 }
