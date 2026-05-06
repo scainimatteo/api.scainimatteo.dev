@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,10 +17,20 @@ import (
 var config services.Config
 
 func main() {
-	// 1. Carica la configurazione
 	err := loadConfig("config.json")
 	if err != nil {
 		log.Fatalf("❌ Errore caricamento config: %v", err)
+	}
+
+	db, err := services.NewDatabaseConnection(config.DB.Host, config.DB.Port, config.DB.User, config.DB.Password, config.DB.Name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	calendarService, err := services.NewCalendarService(context.Background(), "google-calendar-key.json")
+	if err != nil {
+		log.Fatalf("❌ Errore inizializzazione Google Calendar: %v", err)
 	}
 
 	pushover := services.PushoverService{
@@ -32,11 +43,14 @@ func main() {
 	vikunjaService := vikunja.VikunjaService{
 		Config:   config,
 		Pushover: &pushover,
+		Calendar: calendarService,
+		DB:       db,
 	}
 
 	// 2. Definisci le rotte
 	http.HandleFunc("/firefly/webhook", fireflyService.HandleWebhook)
-	http.HandleFunc("/vikunja/webhook", vikunjaService.HandleWebhook)
+	http.HandleFunc("/vikunja/reminder_webhook", vikunjaService.HandleReminderWebhook)
+	http.HandleFunc("/vikunja/create_task_webhook", vikunjaService.HandleCreateTaskWebhook)
 
 	fmt.Printf("🚀 Server in ascolto sulla porta %s...\n", config.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Port, nil))

@@ -10,7 +10,7 @@ type VikunjaWebhookResponse struct {
 
 type Data struct {
 	Project  Project  `json:"project"`
-	Reminder Reminder `json:"reminder"`
+	Reminder Reminder `json:"reminder"` // Usato nei webhook di tipo reminder
 	Task     Task     `json:"task"`
 	User     User     `json:"user"`
 }
@@ -26,7 +26,7 @@ type Project struct {
 	IsArchived            bool        `json:"is_archived"`
 	IsFavorite            bool        `json:"is_favorite"`
 	MaxPermission         int         `json:"max_permission"`
-	Owner                 interface{} `json:"owner"`
+	Owner                 *User       `json:"owner"` // Riutilizzo User
 	ParentProjectID       int         `json:"parent_project_id"`
 	Position              float64     `json:"position"`
 	Title                 string      `json:"title"`
@@ -40,42 +40,52 @@ type Reminder struct {
 	Reminder       time.Time `json:"reminder"`
 }
 
+type Label struct {
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	HexColor    string    `json:"hex_color"`
+	CreatedBy   *User     `json:"created_by"` // Riutilizzo User
+	Created     time.Time `json:"created"`
+	Updated     time.Time `json:"updated"`
+}
+
 type Task struct {
-	Assignees              interface{} `json:"assignees"`
-	Attachments            interface{} `json:"attachments"`
-	BucketID               int         `json:"bucket_id"`
-	CoverImageAttachmentID int         `json:"cover_image_attachment_id"`
-	Created                time.Time   `json:"created"`
-	CreatedBy              interface{} `json:"created_by"`
+	ID                     int         `json:"id"`
+	Title                  string      `json:"title"`
 	Description            string      `json:"description"`
 	Done                   bool        `json:"done"`
 	DoneAt                 time.Time   `json:"done_at"`
 	DueDate                time.Time   `json:"due_date"`
+	StartDate              time.Time   `json:"start_date"`
 	EndDate                time.Time   `json:"end_date"`
+	Reminders              []*Reminder `json:"reminders"` // Ora è una slice di Reminder
+	ProjectID              int         `json:"project_id"`
+	RepeatAfter            int         `json:"repeat_after"`
+	RepeatMode             int         `json:"repeat_mode"`
+	Priority               int         `json:"priority"`
+	Labels                 []*Label    `json:"labels"` // Ora è una slice di Label
 	HexColor               string      `json:"hex_color"`
-	ID                     int         `json:"id"`
+	PercentDone            float64     `json:"percent_done"`
 	Identifier             string      `json:"identifier"`
 	Index                  int         `json:"index"`
 	IsFavorite             bool        `json:"is_favorite"`
-	Labels                 interface{} `json:"labels"`
-	PercentDone            float64     `json:"percent_done"`
-	Position               float64     `json:"position"`
-	Priority               int         `json:"priority"`
-	ProjectID              int         `json:"project_id"`
-	Reactions              interface{} `json:"reactions"`
-	RelatedTasks           interface{} `json:"related_tasks"`
-	Reminders              interface{} `json:"reminders"`
-	RepeatAfter            int         `json:"repeat_after"`
-	RepeatMode             int         `json:"repeat_mode"`
-	StartDate              time.Time   `json:"start_date"`
-	Title                  string      `json:"title"`
+	Created                time.Time   `json:"created"`
 	Updated                time.Time   `json:"updated"`
+	BucketID               int         `json:"bucket_id"`
+	Position               float64     `json:"position"`
+	CreatedBy              *User       `json:"created_by"`
+	Assignees              interface{} `json:"assignees"`
+	Attachments            interface{} `json:"attachments"`
+	RelatedTasks           interface{} `json:"related_tasks"`
+	Reactions              interface{} `json:"reactions"`
+	CoverImageAttachmentID int         `json:"cover_image_attachment_id"`
 }
 
 type User struct {
-	Created  time.Time `json:"created"`
 	ID       int       `json:"id"`
 	Name     string    `json:"name"`
-	Updated  time.Time `json:"updated"`
 	Username string    `json:"username"`
+	Created  time.Time `json:"created"`
+	Updated  time.Time `json:"updated"`
 }
