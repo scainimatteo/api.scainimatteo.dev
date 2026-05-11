@@ -22,25 +22,24 @@ func NewCalendarService(ctx context.Context, serviceAccountKeyPath string) (*Cal
 	return &CalendarService{srv: srv}, nil
 }
 
-// UpsertEvent riceve solo dati primitivi, rendendolo agnostico rispetto a chi lo chiama
-func (s *CalendarService) UpsertEvent(ctx context.Context, calendarID, eventID, title, description string, start, end time.Time) (string, error) {
+func (s *CalendarService) UpsertEvent(ctx context.Context, calendarID, eventID, title, description string, start time.Time) (string, error) {
+	timezone, _ := time.LoadLocation("Europe/Rome")
+	startDate := time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, timezone)
 
-	// Configurazione dell'evento
 	event := &calendar.Event{
 		Summary:     title,
 		Description: description,
 		Start: &calendar.EventDateTime{
-			DateTime: start.Format(time.RFC3339),
-			TimeZone: "UTC", // O la tua timezone locale
+			DateTime: startDate.Format(time.RFC3339),
+			TimeZone: timezone.String(),
 		},
 		End: &calendar.EventDateTime{
-			DateTime: end.Format(time.RFC3339),
-			TimeZone: "UTC",
+			DateTime: startDate.Format(time.RFC3339),
+			TimeZone: timezone.String(),
 		},
 	}
 
 	if eventID == "" {
-		// CREAZIONE: Se non abbiamo un ID, inseriamo un nuovo evento
 		res, err := s.srv.Events.Insert(calendarID, event).Context(ctx).Do()
 		if err != nil {
 			return "", fmt.Errorf("errore creazione evento: %v", err)
@@ -48,7 +47,6 @@ func (s *CalendarService) UpsertEvent(ctx context.Context, calendarID, eventID, 
 		return res.Id, nil
 	}
 
-	// AGGIORNAMENTO: Se l'ID esiste, aggiorniamo l'evento esistente
 	res, err := s.srv.Events.Update(calendarID, eventID, event).Context(ctx).Do()
 	if err != nil {
 		return "", fmt.Errorf("errore aggiornamento evento %s: %v", eventID, err)

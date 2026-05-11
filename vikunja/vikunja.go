@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 
@@ -39,10 +38,10 @@ func (s VikunjaService) HandleReminderWebhook(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	s.HandleReminder(task)
+
 	for _, label := range task.Labels {
 		switch label.Title {
-		case "Reminder":
-			s.HandleReminder(task)
 		case "Autocomplete":
 			err := s.HandleAutocomplete(task)
 			if err != nil {
@@ -124,7 +123,7 @@ func (s VikunjaService) HandleCalendar(task *Task) error {
 	switch err {
 	case sql.ErrNoRows:
 		{
-			newEventID, err := s.Calendar.UpsertEvent(context.Background(), "primary", "", task.Title, task.Description, task.DueDate, task.DueDate)
+			newEventID, err := s.Calendar.UpsertEvent(context.Background(), s.Config.Vikunja.CalendarID, "", task.Title, task.Description, task.DueDate)
 			if err != nil {
 				return err
 			}
@@ -136,7 +135,7 @@ func (s VikunjaService) HandleCalendar(task *Task) error {
 		}
 	case nil:
 		{
-			_, err := s.Calendar.UpsertEvent(context.Background(), "primary", googleEventID, task.Title, task.Description, task.DueDate, task.DueDate)
+			_, err := s.Calendar.UpsertEvent(context.Background(), s.Config.Vikunja.CalendarID, googleEventID, task.Title, task.Description, task.DueDate)
 			if err != nil {
 				return err
 			}
@@ -159,7 +158,7 @@ func (s VikunjaService) HandleReminder(task *Task) {
 func (s VikunjaService) HandleAutocomplete(task *Task) error {
 	url := fmt.Sprintf("%s/api/v1/tasks/%d", s.Config.Vikunja.BaseURL, task.ID)
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"done": true,
 	}
 
@@ -185,12 +184,6 @@ func (s VikunjaService) HandleAutocomplete(task *Task) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("vikunja API ha risposto con status %d", resp.StatusCode)
 	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	log.Println("Task completato con successo | status: ", resp.StatusCode, " | body: ", string(body))
 
 	return nil
 }
