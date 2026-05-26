@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"api.scainimatteo.dev/services"
 )
@@ -43,12 +44,11 @@ func (s VikunjaService) HandleReminderWebhook(w http.ResponseWriter, r *http.Req
 	for _, label := range task.Labels {
 		switch label.Title {
 		case "Autocomplete":
-			err := s.HandleAutocomplete(task)
+			err := s.completeTask(task)
 			if err != nil {
 				log.Printf("errore completamento task: %v", err)
 			}
 		}
-
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -155,7 +155,7 @@ func (s VikunjaService) HandleReminder(task *Task) {
 	s.Pushover.Send(title, message, s.Config.VikunjaPushoverToken)
 }
 
-func (s VikunjaService) HandleAutocomplete(task *Task) error {
+func (s VikunjaService) completeTask(task *Task) error {
 	url := fmt.Sprintf("%s/api/v1/tasks/%d", s.Config.Vikunja.BaseURL, task.ID)
 
 	payload := map[string]any{
@@ -186,4 +186,31 @@ func (s VikunjaService) HandleAutocomplete(task *Task) error {
 	}
 
 	return nil
+}
+
+func (s VikunjaService) CompleteTask(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
+		return
+	}
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Errore conversione ID", http.StatusBadRequest)
+		return
+	}
+	task, err := s.GetTaskByID(id)
+	if err != nil {
+		http.Error(w, "Errore ottenimento task", http.StatusInternalServerError)
+		return
+	}
+
+	err = s.completeTask(task)
+	if err != nil {
+		http.Error(w, "Errore completamento task", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Task " + task.Title + " completato"))
 }
