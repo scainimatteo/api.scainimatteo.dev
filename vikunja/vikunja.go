@@ -44,7 +44,7 @@ func (s VikunjaService) HandleReminderWebhook(w http.ResponseWriter, r *http.Req
 	for _, label := range task.Labels {
 		switch label.Title {
 		case "Autocomplete":
-			err := s.completeTask(task)
+			err := s.completeTask(task, false)
 			if err != nil {
 				log.Printf("errore completamento task: %v", err)
 			}
@@ -155,11 +155,16 @@ func (s VikunjaService) HandleReminder(task *Task) {
 	s.Pushover.Send(title, message, s.Config.VikunjaPushoverToken)
 }
 
-func (s VikunjaService) completeTask(task *Task) error {
+func (s VikunjaService) completeTask(task *Task, recursive bool) error {
 	url := fmt.Sprintf("%s/api/v1/tasks/%d", s.Config.Vikunja.BaseURL, task.ID)
 
 	payload := map[string]any{
 		"done": true,
+	}
+
+	if recursive || task.RepeatAfter > 0 {
+		payload["repeat_after"] = 1
+		payload["repeat_mode"] = 1
 	}
 
 	jsonPayload, err := json.Marshal(payload)
@@ -205,7 +210,7 @@ func (s VikunjaService) CompleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.completeTask(task)
+	err = s.completeTask(task, true)
 	if err != nil {
 		http.Error(w, "Errore completamento task", http.StatusInternalServerError)
 		return
