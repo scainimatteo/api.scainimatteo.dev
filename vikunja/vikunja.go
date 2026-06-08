@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strconv"
+	"time"
 
 	"api.scainimatteo.dev/services"
 )
@@ -79,7 +81,38 @@ func (s VikunjaService) HandleCreateTaskWebhook(w http.ResponseWriter, r *http.R
 			s.HandleCalendar(task)
 		}
 	}
+}
 
+func (s VikunjaService) HandleUpdateTaskWebhook(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var data VikunjaWebhookResponse
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, "Errore JSON", http.StatusBadRequest)
+		return
+	}
+
+	task, err := s.GetTaskByID(data.Data.Task.ID)
+	if err != nil {
+		http.Error(w, "Errore ottenimento task", http.StatusInternalServerError)
+		return
+	}
+
+	for _, label := range task.Labels {
+		switch label.Title {
+		case "Fix hours":
+			err := s.fixHours(task)
+			if err != nil {
+				log.Printf("errore fix hours: %v", err)
+			}
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s VikunjaService) GetTaskByID(taskID int) (*Task, error) {
@@ -155,44 +188,6 @@ func (s VikunjaService) HandleReminder(task *Task) {
 	s.Pushover.Send(title, message, s.Config.VikunjaPushoverToken)
 }
 
-func (s VikunjaService) completeTask(task *Task) error {
-	url := fmt.Sprintf("%s/api/v1/tasks/%d", s.Config.Vikunja.BaseURL, task.ID)
-
-	payload := map[string]any{
-		"done": true,
-	}
-
-	if task.RepeatAfter > 0 {
-		payload["repeat_after"] = task.RepeatAfter
-		payload["repeat_mode"] = task.RepeatMode
-	}
-
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+s.Config.Vikunja.APIToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("vikunja API ha risposto con status %d", resp.StatusCode)
-	}
-
-	return nil
-}
-
 func (s VikunjaService) CompleteTask(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
@@ -218,4 +213,79 @@ func (s VikunjaService) CompleteTask(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Task " + task.Title + " completato"))
+}
+
+func (s VikunjaService) completeTask(task *Task) error {
+	payload := map[string]any{
+		"done": true,
+	}
+
+	resp, err := s.callVikunjaAPI(task, "POST", payload)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("vikunja API ha risposto con status %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
+func (s VikunjaService) fixHours(task *Task) error {
+	baseDate := task.DueDate
+	if baseDate.IsZero() {
+		baseDate = time.Now()
+	}
+
+	re := regexp.MustCompile(`^Hour:\s*([0-9]{2})[:.]([0-9]{2})`)
+
+	matches := re.FindStringSubmatch(task.Description)
+	if len(matches) < 2 {
+		return fmt.Errorf("formato orario non trovato all'inizio della stringa")
+	}
+
+	correctHours, _ := strconv.Atoi(matches[1])
+	correctMinutes, _ := strconv.Atoi(matches[2])
+	newDueDate := time.Date(baseDate.Year(), baseDate.Month(), baseDate.Day(), correctHours, correctMinutes, 0, 0, baseDate.Location())
+
+	payload := map[string]any{
+		"due_date": newDueDate.Format(time.RFC3339),
+	}
+
+	resp, err := s.callVikunjaAPI(task, "POST", payload)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("vikunja API ha risposto con status %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
+func (s VikunjaService) callVikunjaAPI(task *Task, method string, payload map[string]any) (*http.Response, error) {
+	url := fmt.Sprintf("%s/api/v1/tasks/%d", s.Config.Vikunja.BaseURL, task.ID)
+
+	if task.RepeatAfter > 0 {
+		payload["repeat_after"] = task.RepeatAfter
+		payload["repeat_mode"] = task.RepeatMode
+	}
+
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+s.Config.Vikunja.APIToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	return http.DefaultClient.Do(req)
 }
