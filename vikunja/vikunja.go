@@ -92,7 +92,7 @@ func (s VikunjaService) HandleUpdateTaskWebhook(w http.ResponseWriter, r *http.R
 	var data VikunjaWebhookResponse
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		http.Error(w, "Errore JSON", http.StatusBadRequest)
+		http.Error(w, "Errore JSON: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -211,16 +211,20 @@ func (s VikunjaService) CompleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	updatedTask, err := s.GetTaskByID(id)
+	if err != nil {
+		http.Error(w, "Errore ottenimento task", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Task " + task.Title + " completato"))
+	w.Write([]byte("Task " + updatedTask.Title + " completato. Prossima scadenza: " + updatedTask.DueDate.Format("2006-01-02 15:04")))
 }
 
 func (s VikunjaService) completeTask(task *Task) error {
-	payload := map[string]any{
-		"done": true,
-	}
+	task.Done = true
 
-	resp, err := s.callVikunjaAPI(task, "POST", payload)
+	resp, err := s.callVikunjaAPI(task)
 	if err != nil {
 		return err
 	}
@@ -238,7 +242,7 @@ func (s VikunjaService) fixHours(task *Task) error {
 		baseDate = time.Now()
 	}
 
-	re := regexp.MustCompile(`^Hour:\s*([0-9]{2})[:.]([0-9]{2})`)
+	re := regexp.MustCompile(`Hour:\s*([0-9]{2})[:.]([0-9]{2})`)
 
 	matches := re.FindStringSubmatch(task.Description)
 	if len(matches) < 2 {
@@ -247,13 +251,12 @@ func (s VikunjaService) fixHours(task *Task) error {
 
 	correctHours, _ := strconv.Atoi(matches[1])
 	correctMinutes, _ := strconv.Atoi(matches[2])
-	newDueDate := time.Date(baseDate.Year(), baseDate.Month(), baseDate.Day(), correctHours, correctMinutes, 0, 0, baseDate.Location())
+	timezone, _ := time.LoadLocation("Europe/Rome")
+	newDueDate := time.Date(baseDate.Year(), baseDate.Month(), baseDate.Day(), correctHours, correctMinutes, 0, 0, timezone)
 
-	payload := map[string]any{
-		"due_date": newDueDate.Format(time.RFC3339),
-	}
+	task.DueDate = newDueDate
 
-	resp, err := s.callVikunjaAPI(task, "POST", payload)
+	resp, err := s.callVikunjaAPI(task)
 
 	if err != nil {
 		return err
@@ -266,20 +269,15 @@ func (s VikunjaService) fixHours(task *Task) error {
 	return nil
 }
 
-func (s VikunjaService) callVikunjaAPI(task *Task, method string, payload map[string]any) (*http.Response, error) {
+func (s VikunjaService) callVikunjaAPI(task *Task) (*http.Response, error) {
 	url := fmt.Sprintf("%s/api/v1/tasks/%d", s.Config.Vikunja.BaseURL, task.ID)
 
-	if task.RepeatAfter > 0 {
-		payload["repeat_after"] = task.RepeatAfter
-		payload["repeat_mode"] = task.RepeatMode
-	}
-
-	jsonPayload, err := json.Marshal(payload)
+	jsonPayload, err := json.Marshal(task)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonPayload))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return nil, err
 	}
