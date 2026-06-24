@@ -217,8 +217,10 @@ func (s VikunjaService) CompleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	timezone, _ := time.LoadLocation("Europe/Rome")
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Task " + updatedTask.Title + " completato. Prossima scadenza: " + updatedTask.DueDate.Format("2006-01-02 15:04")))
+	w.Write([]byte("Task " + updatedTask.Title + " completato. Prossima scadenza: " + updatedTask.DueDate.In(timezone).Format("2006-01-02 15:04")))
 }
 
 func (s VikunjaService) completeTask(task *Task) error {
