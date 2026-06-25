@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 15px;
+      background: #ffffff;
+      color: #333;
+      margin: 0;
+    }
+
+    .container {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #e1e4e8;
+    }
+
+    h3 {
+      margin-top: 0;
+      color: #111;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    /* Riga degli input */
+    .row-inputs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .input-group {
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    input {
+      width: 100%;
+      padding: 6px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    /* Riga intermedia e finale */
+    .row-outputs {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px dashed #ccc;
+    }
+
+    .output-box {
+      flex: 1;
+      background: #eef2f7;
+      padding: 8px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .output-box span {
+      display: block;
+      font-weight: bold;
+      font-size: 15px;
+      margin-top: 2px;
+      color: #0366d6;
+    }
+
+    /* Riga Finale */
+    .row-final {
+      margin-top: 15px;
+      padding-top: 12px;
+      border-top: 2px solid #0366d6;
+      text-align: center;
+      display: flex;
+      gap: 10px;
+    }
+
+    .final-box {
+      font-size: 15px;
+      font-weight: 600;
+      flex-grow: 1;
+    }
+
+    .final-box span {
+      font-size: 20px;
+      color: #28a745;
+      display: block;
+      margin-top: 4px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="row-inputs">
+      <div class="input-group">
+        <label>Costo bolletta</label>
+        <input type="number" id="n1" value="0" oninput="calcola()">
+      </div>
+      <div class="input-group">
+        <label>KW totali</label>
+        <input type="number" id="n2" value="0" oninput="calcola()">
+      </div>
+      <div class="input-group">
+        <label>KW usati</label>
+        <input type="number" id="n3" value="0" oninput="calcola()">
+      </div>
+      <div class="input-group">
+        <label>% autoconsumo</label>
+        <input type="number" id="n4" value="0" oninput="calcola()">
+      </div>
+    </div>
+
+    <div class="row-outputs">
+      <div class="output-box">
+        Costo al KW
+        <span id="somma12">0</span>
+      </div>
+      <div class="output-box">
+        KW usati al netto FV
+        <span id="somma34">0</span>
+      </div>
+    </div>
+
+    <div class="row-final">
+      <div class="final-box">
+        Totale bonifico
+        <span id="totale">0</span>
+      </div>
+    </div>
+
+    <div class="row-outputs">
+      <div class="input-group">
+        <label>Mese 1 casa</label>
+        <input type="number" id="m1" value="0" oninput="calcola()">
+      </div>
+      <div class="input-group">
+        <label>Mese 2 casa</label>
+        <input type="number" id="m2" value="0" oninput="calcola()">
+      </div>
+      <div class="input-group">
+        <label>Mese 1 auto</label>
+        <input type="number" id="m3" value="0" oninput="calcola()">
+      </div>
+      <div class="input-group">
+        <label>Mese 2 auto</label>
+        <input type="number" id="m4" value="0" oninput="calcola()">
+      </div>
+    </div>
+
+    <div class="row-outputs">
+      <div class="output-box">
+        Totale KW casa al netto FV
+        <span id="totaleCasa">0</span>
+      </div>
+      <div class="output-box">
+        Totale KW auto al netto FV
+        <span id="totaleAuto">0</span>
+      </div>
+    </div>
+
+    <div class="row-final">
+      <div class="final-box">
+        Totale costo casa
+        <span id="finaleCasa">0</span>
+      </div>
+      <div class="final-box">
+        Totale costo auto
+        <span id="finaleAuto">0</span>
+      </div>
+    </div>
+
+
+  </div>
+
+  <script>
+    function calcola() {
+      // Recupero i valori (se vuoti imposta a 0)
+      let n1 = parseFloat(document.getElementById('n1').value) || 0;
+      let n2 = parseFloat(document.getElementById('n2').value) || 0;
+      let n3 = parseFloat(document.getElementById('n3').value) || 0;
+      let n4 = parseFloat(document.getElementById('n4').value) || 0;
+
+      // Calcolo step intermedi
+      let s12 = n1 / n2;
+      let s34 = n3 - ((n3 * n4) / 100);
+
+      // Calcolo finale
+      let finale = s12 * s34;
+
+      // Stampo a video in tempo reale
+      document.getElementById('somma12').innerText = s12.toFixed(2);
+      document.getElementById('somma34').innerText = s34.toFixed(2);
+      document.getElementById('totale').innerText = finale.toFixed(2);
+
+      // Calcolo costo casa e auto
+      let m1 = parseFloat(document.getElementById('m1').value) || 0;
+      let m2 = parseFloat(document.getElementById('m2').value) || 0;
+      let m3 = parseFloat(document.getElementById('m3').value) || 0;
+      let m4 = parseFloat(document.getElementById('m4').value) || 0;
+
+      let totaleCasa = (m1 + m2) - ((m1 + m2) * n4) / 100;
+      let totaleAuto = (m3 + m4) - ((m3 + m4) * n4) / 100;
+
+      let finaleCasa = totaleCasa * s12;
+      let finaleAuto = totaleAuto * s12;
+      document.getElementById('totaleCasa').innerText = totaleCasa.toFixed(2);
+      document.getElementById('totaleAuto').innerText = totaleAuto.toFixed(2);
+      document.getElementById('finaleCasa').innerText = finaleCasa.toFixed(2);
+      document.getElementById('finaleAuto').innerText = finaleAuto.toFixed(2);
+    }
+  </script>
+
+</body>
+
+</html>

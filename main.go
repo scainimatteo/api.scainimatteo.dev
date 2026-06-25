@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"api.scainimatteo.dev/firefly"
+	"api.scainimatteo.dev/outline"
 	"api.scainimatteo.dev/services"
 	"api.scainimatteo.dev/vikunja"
 )
@@ -46,6 +47,9 @@ func main() {
 		Calendar: calendarService,
 		DB:       db,
 	}
+	outlineService := outline.OutlineService{
+		Config: config,
+	}
 
 	// 2. Definisci le rotte
 	http.HandleFunc("/firefly/webhook", fireflyService.HandleWebhook)
@@ -53,6 +57,7 @@ func main() {
 	http.HandleFunc("/vikunja/create_task_webhook", vikunjaService.HandleCreateTaskWebhook)
 	http.HandleFunc("/vikunja/update_task_webhook", vikunjaService.HandleUpdateTaskWebhook)
 	http.HandleFunc("/vikunja/complete_task/{id}", vikunjaService.CompleteTask)
+	http.HandleFunc("/outline/transfer_calculator", outlineService.GetTransferCalculatorTemplate)
 
 	fmt.Printf("🚀 Server in ascolto sulla porta %s...\n", config.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Port, nil))
