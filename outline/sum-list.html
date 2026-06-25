@@ -1,45 +1,68 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            padding: 15px; 
-            background: #ffffff; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 15px;
+            background: #ffffff;
             color: #333;
             margin: 0;
         }
-        .container { 
-            background: #f8f9fa; 
-            padding: 20px; 
-            border-radius: 8px; 
-            border: 1px solid #e1e4e8; 
+
+        .container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e1e4e8;
         }
-        h3 { margin-top: 0; color: #111; font-size: 16px; margin-bottom: 10px; }
-        p { font-size: 13px; color: #666; margin-top: 0; margin-bottom: 15px; }
-        
-        textarea { 
-            width: 100%; 
-            height: 80px; 
-            padding: 10px; 
-            box-sizing: border-box; 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
+
+        h3 {
+            margin-top: 0;
+            color: #111;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 13px;
+            color: #666;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
             font-family: inherit;
             font-size: 14px;
-            resize: vertical;
         }
-        
-        .row-final { 
-            margin-top: 15px; 
-            padding-top: 12px; 
-            border-top: 2px solid #0366d6; 
-            text-align: center; 
+
+        .row-final {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 2px solid #0366d6;
+            text-align: center;
         }
-        .final-box { font-size: 15px; font-weight: 600; }
-        .final-box span { font-size: 24px; color: #28a745; display: block; margin-top: 4px; font-weight: bold; }
-        
+
+        .final-box {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .final-box span {
+            font-size: 24px;
+            color: #28a745;
+            display: block;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
         .count-badge {
             font-size: 11px;
             color: #888;
@@ -48,57 +71,59 @@
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <p>Inserisci gli importi separati da uno spazio o da un a capo (es: 10 -5.5 23 -12)</p>
-    
-    <textarea id="listaNumeri" placeholder="Scrivi o incolla i numeri qui..." oninput="calcolaSomma()"></textarea>
-    <div class="count-badge">Numeri rilevati: <span id="contatore">0</span></div>
-    
-    <div class="row-final">
-        <div class="final-box">
-            Somma Totale
-            <span id="totale">0.00</span>
+    <div class="container">
+        <p>Inserisci gli importi separati da uno spazio o da un a capo (es: 10 -5.5 23 -12)</p>
+
+        <input type="text" id="listaNumeri" placeholder="Esempio: 10 -5 20 -3" oninput="calcolaSomma()">
+        <div class="count-badge">Numeri rilevati: <span id="contatore">0</span></div>
+
+        <div class="row-final">
+            <div class="final-box">
+                Somma Totale
+                <span id="totale">0.00</span>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-function calcolaSomma() {
-    // 1. Prendi il testo della textarea
-    let testo = document.getElementById('listaNumeri').value;
-    
-    // 2. Usa una Regex per dividere la stringa in base a qualsiasi spazio, tab o invio (\s+)
-    // .trim() rimuove spazi vuoti all'inizio e alla fine per evitare falsi positivi
-    let pezzi = testo.trim().split(/\s+/);
-    
-    let somma = 0;
-    let quantiNumeri = 0;
-    
-    // 3. Cicla sui pezzi trovati
-    for (let i = 0; i < pezzi.length; i++) {
-        if (pezzi[i] === "") continue; // Salta i pezzi vuoti
-        
-        let numero = parseFloat(pezzi[i]);
-        
-        // Verifica se il pezzo è effettivamente un numero valido
-        if (!isNaN(numero)) {
-            somma += numero;
-            quantiNumeri++;
+    <script>
+        function calcolaSomma() {
+            // 1. Prendi il testo della textarea
+            let testo = document.getElementById('listaNumeri').value;
+
+            // 2. Usa una Regex per dividere la stringa in base a qualsiasi spazio, tab o invio (\s+)
+            // .trim() rimuove spazi vuoti all'inizio e alla fine per evitare falsi positivi
+            let pezzi = testo.trim().split(/\s+/);
+
+            let somma = 0;
+            let quantiNumeri = 0;
+
+            // 3. Cicla sui pezzi trovati
+            for (let i = 0; i < pezzi.length; i++) {
+                if (pezzi[i] === "") continue; // Salta i pezzi vuoti
+
+                let numero = parseFloat(pezzi[i]);
+
+                // Verifica se il pezzo è effettivamente un numero valido
+                if (!isNaN(numero)) {
+                    somma += numero;
+                    quantiNumeri++;
+                }
+            }
+
+            // 4. Aggiorna l'interfaccia (mostra 0.00 se la textarea è vuota)
+            if (testo.trim() === "") {
+                document.getElementById('totale').innerText = "0.00";
+                document.getElementById('contatore').innerText = "0";
+            } else {
+                document.getElementById('totale').innerText = somma.toFixed(2);
+                document.getElementById('contatore').innerText = quantiNumeri;
+            }
         }
-    }
-    
-    // 4. Aggiorna l'interfaccia (mostra 0.00 se la textarea è vuota)
-    if (testo.trim() === "") {
-        document.getElementById('totale').innerText = "0.00";
-        document.getElementById('contatore').innerText = "0";
-    } else {
-        document.getElementById('totale').innerText = somma.toFixed(2);
-        document.getElementById('contatore').innerText = quantiNumeri;
-    }
-}
-</script>
+    </script>
 
 </body>
+
 </html>
