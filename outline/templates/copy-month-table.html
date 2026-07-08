@@ -1,3 +1,105 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            padding: 15px; 
+            background: #ffffff; 
+            color: #333;
+            margin: 0;
+        }
+        .container { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #e1e4e8; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        h3 { margin-top: 0; color: #111; font-size: 15px; margin-bottom: 12px; text-align: center; }
+        
+        .action-box {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        input[type="text"] { 
+            flex: 1;
+            padding: 8px 12px; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            font-size: 14px;
+            background: #fff;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background-color: #0366d6;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+        
+        button:hover {
+            background-color: #0255b3;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        /* Classe temporanea per il feedback di successo */
+        button.copied {
+            background-color: #28a745;
+        }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <h3>Copia template del mese negli appunti</h3>
+    
+    <div class="action-box">
+        <button id="btnCopia" onclick="copiaTesto()">Copia</button>
+    </div>
+</div>
+
+<script>
+function copiaTesto() {
+    // 1. Seleziona l'elemento di input
+    let inputTesto = document.getElementById("testoDaCopiare");
+    
+    // 2. Utilizza la Clipboard API moderna per copiare il testo
+    navigator.clipboard.writeText("{placeholder}").then(() => {
+        // 3. Gestione del feedback visivo sul pulsante
+        let bottone = document.getElementById("btnCopia");
+        let testoOriginale = bottone.innerText;
+        
+        bottone.innerText = "Copiato!";
+        bottone.classList.add("copied");
+        bottone.disabled = true; // Disabilita temporaneamente per evitare click multipli
+        
+        // 4. Ripristina il pulsante dopo 2 secondi (2000 millisecondi)
+        setTimeout(() => {
+            bottone.innerText = testoOriginale;
+            bottone.classList.remove("copied");
+            bottone.disabled = false;
+        }, 2000);
+        
+    }).catch(err => {
+        console.error("Errore durante la copia: ", err);
+        alert("Impossibile copiare il testo automaticamente.");
+    });
+}
+</script>
+
+</body>
 </html>

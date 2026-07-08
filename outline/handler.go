@@ -3,6 +3,7 @@ package outline
 import (
 	_ "embed"
 	"net/http"
+	"strings"
 
 	"api.scainimatteo.dev/services"
 )
@@ -19,6 +20,12 @@ var sumListTemplate string
 
 //go:embed templates/copy-month-table.html
 var copyMonthTableTemplate string
+var monthTablePlaceholder = `Descrizione
+Importo
+Eseguito
+
+
+`
 
 func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -37,6 +44,7 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 		template = sumListTemplate
 	case "copy_month_table":
 		template = copyMonthTableTemplate
+		template = strings.ReplaceAll(template, "{placeholder}", monthTablePlaceholder)
 	default:
 		http.Error(w, "Template non trovato", http.StatusNotFound)
 		return
