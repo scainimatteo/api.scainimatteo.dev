@@ -57,8 +57,7 @@ func main() {
 	http.HandleFunc("/vikunja/create_task_webhook", vikunjaService.HandleCreateTaskWebhook)
 	http.HandleFunc("/vikunja/update_task_webhook", vikunjaService.HandleUpdateTaskWebhook)
 	http.HandleFunc("/vikunja/complete_task/{id}", vikunjaService.CompleteTask)
-	http.HandleFunc("/outline/transfer_calculator", outlineService.GetTransferCalculatorTemplate)
-	http.HandleFunc("/outline/sum_list", outlineService.GetSumListTemplate)
+	http.HandleFunc("/outline/{templateName}", outlineService.GetTemplate)
 
 	fmt.Printf("🚀 Server in ascolto sulla porta %s...\n", config.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Port, nil))

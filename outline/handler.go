@@ -11,28 +11,37 @@ type OutlineService struct {
 	Config services.Config
 }
 
-//go:embed calculator.html
+//go:embed templates/calculator.html
 var calculatorTemplate string
 
-//go:embed sum-list.html
+//go:embed templates/sum-list.html
 var sumListTemplate string
 
-func (s OutlineService) GetTransferCalculatorTemplate(w http.ResponseWriter, r *http.Request) {
+//go:embed templates/copy-month-table.html
+var copyMonthTableTemplate string
+
+func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(calculatorTemplate))
-}
+	templateName := r.PathValue("templateName")
 
-func (s OutlineService) GetSumListTemplate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
+	var template string
+
+	switch templateName {
+	case "transfer_calculator":
+		template = calculatorTemplate
+	case "sum_list":
+		template = sumListTemplate
+	case "copy_month_table":
+		template = copyMonthTableTemplate
+	default:
+		http.Error(w, "Template non trovato", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(sumListTemplate))
+	w.Write([]byte(template))
 }
