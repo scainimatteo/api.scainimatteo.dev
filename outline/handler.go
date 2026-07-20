@@ -21,8 +21,10 @@ var sumListTemplate string
 //go:embed templates/copy-month-table.html
 var copyMonthTableTemplate string
 var monthTablePlaceholder = `Descrizione
+Categoria
 Importo
 Eseguito
+
 
 
 `
