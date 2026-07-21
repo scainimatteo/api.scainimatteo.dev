@@ -24,7 +24,13 @@ type Vikunja struct {
 }
 
 type Firefly struct {
-	BaseURL       string `json:"base_url"`
-	PushoverToken string `json:"pushover_token"`
-	APIKey        string `json:"api_key"`
+	BaseURL       string         `json:"base_url"`
+	PushoverToken string         `json:"pushover_token"`
+	APIKey        string         `json:"api_key"`
+	Sources       FireflySources `json:"sources"`
+}
+
+type FireflySources struct {
+	Bper   string `json:"bper"`
+	Ticket string `json:"ticket"`
 }

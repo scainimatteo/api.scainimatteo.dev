@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
-	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -98,9 +98,7 @@ func (s FireflyService) HandleCSVImport(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	myAccountName := "Conto Principale"
-	today := time.Now()
-	startDate := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
+	date := time.Now().Format("2006-01-02")
 
 	for i, record := range records {
 		if len(record) < 3 {
@@ -110,48 +108,26 @@ func (s FireflyService) HandleCSVImport(w http.ResponseWriter, r *http.Request) 
 
 		title := record[0]
 		category := record[1]
-		amountStr := record[2]
+		amount := record[2]
 
-		amountFloat, err := strconv.ParseFloat(amountStr, 64)
+		_, err := strconv.ParseFloat(amount, 64)
 		if err != nil {
 			log.Printf("Errore conversione importo riga %d: %v", i+1, err)
 			continue
 		}
 
-		txType := "withdrawal"
-		source := myAccountName
-		destination := title // Se non hai un conto spesa specifico, usa il titolo o un default come "Uscite Varie"
-
-		// Se l'importo è negativo, è un'entrata (Deposit)
-		if amountFloat < 0 {
-			txType = "deposit"
-			source = "Entrate Varie" // Conto di origine per le entrate (Revenue account)
-			destination = myAccountName
+		transaction := Transaction{
+			Type:         "withdrawal",
+			Date:         date,
+			Amount:       amount,
+			Description:  title,
+			CategoryName: category,
+			SourceID:     s.Config.Firefly.Sources.Bper,
 		}
 
-		// Firefly richiede sempre importi positivi nel JSON
-		finalAmount := fmt.Sprintf("%.2f", math.Abs(amountFloat))
-
-		// 3. Prepara il payload per Firefly
-		txRequest := FireflyTxRequest{
-			Transactions: []Transaction{
-				{
-					Type:            txType,
-					Date:            startDate,
-					Amount:          finalAmount,
-					Description:     title,
-					CategoryName:    category,
-					SourceName:      source,
-					DestinationName: destination,
-				},
-			},
-		}
-
-		// 4. Invia la richiesta all'API di Firefly
-		err = s.createFireflyTransaction(txRequest)
+		err = s.saveTransaction(transaction)
 		if err != nil {
 			log.Printf("Errore creazione transazione '%s': %v", title, err)
-			// Puoi decidere se interrompere o continuare con le altre righe
 		}
 	}
 
@@ -159,14 +135,20 @@ func (s FireflyService) HandleCSVImport(w http.ResponseWriter, r *http.Request) 
 	w.Write([]byte("Importazione completata"))
 }
 
-func (s FireflyService) createFireflyTransaction(txReq FireflyTxRequest) error {
-	jsonData, err := json.Marshal(txReq)
+func (s FireflyService) saveTransaction(transaction Transaction) error {
+	baseURL := strings.TrimSuffix(s.Config.Firefly.BaseURL, "/")
+	apiURL := baseURL + "/api/v1/transactions"
+
+	payload := Payload{
+		Transactions: []Transaction{transaction},
+	}
+
+	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
 
-	endpoint := fmt.Sprintf("%s/transactions", s.Config.Firefly.BaseURL)
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPost, apiURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -182,8 +164,9 @@ func (s FireflyService) createFireflyTransaction(txReq FireflyTxRequest) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 300 {
-		return fmt.Errorf("firefly api ha risposto con status %d", resp.StatusCode)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		b, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("status: %s, body: %s", resp.Status, string(b))
 	}
 
 	return nil
