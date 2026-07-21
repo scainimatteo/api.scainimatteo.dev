@@ -86,3 +86,7 @@ type Link struct {
 	Rel string `json:"rel"`
 	URI string `json:"uri"`
 }
+
+type FireflyTxRequest struct {
+	Transactions []Transaction `json:"transactions"` // Il tag JSON deve rimanere "transactions"
+}

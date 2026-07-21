@@ -2,9 +2,9 @@ package services
 
 type Config struct {
 	DB                   DB      `json:"db"`
-	FireflyPushoverToken string  `json:"firefly_pushover_token"`
 	VikunjaPushoverToken string  `json:"vikunja_pushover_token"`
 	Vikunja              Vikunja `json:"vikunja"`
+	Firefly              Firefly `json:"firefly"`
 	PushoverUser         string  `json:"pushover_user"`
 	Port                 string  `json:"port"`
 }
@@ -21,4 +21,10 @@ type Vikunja struct {
 	BaseURL    string `json:"base_url"`
 	APIToken   string `json:"api_token"`
 	CalendarID string `json:"calendar_id"`
+}
+
+type Firefly struct {
+	BaseURL       string `json:"base_url"`
+	PushoverToken string `json:"pushover_token"`
+	APIKey        string `json:"api_key"`
 }
