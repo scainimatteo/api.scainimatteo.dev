@@ -51,12 +51,13 @@ func main() {
 		Config: config,
 	}
 
-	// 2. Definisci le rotte
 	http.HandleFunc("/firefly/webhook", fireflyService.HandleWebhook)
+
 	http.HandleFunc("/vikunja/reminder_webhook", vikunjaService.HandleReminderWebhook)
 	http.HandleFunc("/vikunja/create_task_webhook", vikunjaService.HandleCreateTaskWebhook)
 	http.HandleFunc("/vikunja/update_task_webhook", vikunjaService.HandleUpdateTaskWebhook)
 	http.HandleFunc("/vikunja/complete_task/{id}", vikunjaService.CompleteTask)
+
 	http.HandleFunc("/outline/{templateName}", outlineService.GetTemplate)
 
 	fmt.Printf("🚀 Server in ascolto sulla porta %s...\n", config.Port)

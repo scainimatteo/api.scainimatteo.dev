@@ -20,7 +20,6 @@ type FireflyService struct {
 }
 
 func (s FireflyService) HandleWebhook(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
 		return
