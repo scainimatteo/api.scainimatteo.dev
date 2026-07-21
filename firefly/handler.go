@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -110,19 +111,26 @@ func (s FireflyService) HandleCSVImport(w http.ResponseWriter, r *http.Request) 
 		category := record[1]
 		amount := record[2]
 
-		_, err := strconv.ParseFloat(amount, 64)
+		amountFloat, err := strconv.ParseFloat(amount, 64)
 		if err != nil {
 			log.Printf("Errore conversione importo riga %d: %v", i+1, err)
 			continue
 		}
 
 		transaction := Transaction{
-			Type:         "withdrawal",
 			Date:         date,
-			Amount:       amount,
+			Amount:       fmt.Sprintf("%.2f", math.Abs(amountFloat)),
 			Description:  title,
 			CategoryName: category,
-			SourceID:     s.Config.Firefly.Sources.Bper,
+		}
+
+		if amountFloat < 0 {
+			transaction.Type = "deposit"
+			transaction.DestinationID = s.Config.Firefly.Sources.Bper
+			transaction.SourceName = title
+		} else {
+			transaction.Type = "withdrawal"
+			transaction.SourceID = s.Config.Firefly.Sources.Bper
 		}
 
 		err = s.saveTransaction(transaction)

@@ -33,12 +33,14 @@ type Payload struct {
 }
 
 type Transaction struct {
-	Type         string      `json:"type"`
-	Date         string      `json:"date"`
-	Amount       string      `json:"amount"`
-	Description  string      `json:"description"`
-	CategoryName string      `json:"category_name"`
-	SourceID     string      `json:"source_id"`
-	Tags         []string    `json:"tags,omitempty"`
-	RecurrenceID interface{} `json:"recurrence_id,omitempty"`
+	Type          string      `json:"type"`
+	Date          string      `json:"date"`
+	Amount        string      `json:"amount"`
+	Description   string      `json:"description"`
+	CategoryName  string      `json:"category_name"`
+	SourceID      string      `json:"source_id,omitempty"`
+	SourceName    string      `json:"source_name,omitempty"`
+	DestinationID string      `json:"destination_id,omitempty"`
+	Tags          []string    `json:"tags,omitempty"`
+	RecurrenceID  interface{} `json:"recurrence_id,omitempty"`
 }
