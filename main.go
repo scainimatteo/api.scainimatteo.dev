@@ -52,6 +52,7 @@ func main() {
 	}
 
 	http.HandleFunc("/firefly/webhook", fireflyService.HandleWebhook)
+	http.HandleFunc("/firefly/csv", fireflyService.HandleCSVImport)
 
 	http.HandleFunc("/vikunja/reminder_webhook", vikunjaService.HandleReminderWebhook)
 	http.HandleFunc("/vikunja/create_task_webhook", vikunjaService.HandleCreateTaskWebhook)
