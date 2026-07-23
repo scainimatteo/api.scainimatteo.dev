@@ -2,6 +2,7 @@ package outline
 
 import (
 	_ "embed"
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -46,7 +47,8 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 		template = sumListTemplate
 	case "copy_month_table":
 		template = copyMonthTableTemplate
-		template = strings.ReplaceAll(template, "{placeholder}", monthTablePlaceholder)
+		jsonBytes, _ := json.Marshal(monthTablePlaceholder)
+		template = strings.ReplaceAll(template, "{placeholder}", string(jsonBytes))
 	default:
 		http.Error(w, "Template non trovato", http.StatusNotFound)
 		return
