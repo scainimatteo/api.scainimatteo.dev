@@ -48,7 +48,7 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 	case "copy_month_table":
 		template = copyMonthTableTemplate
 		jsonBytes, _ := json.Marshal(monthTablePlaceholder)
-		template = strings.ReplaceAll(template, "{placeholder}", string(jsonBytes))
+		template = strings.ReplaceAll(template, "\"{placeholder}\"", string(jsonBytes))
 	default:
 		http.Error(w, "Template non trovato", http.StatusNotFound)
 		return
