@@ -78,7 +78,7 @@ function copiaTesto() {
     let inputTesto = document.getElementById("testoDaCopiare");
     
     // 2. Utilizza la Clipboard API moderna per copiare il testo
-    navigator.clipboard.writeText("{placeholder}").then(() => {
+    navigator.clipboard.writeText(`{placeholder}`).then(() => {
         // 3. Gestione del feedback visivo sul pulsante
         let bottone = document.getElementById("btnCopia");
         let testoOriginale = bottone.innerText;
