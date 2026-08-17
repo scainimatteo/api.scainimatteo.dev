@@ -25,9 +25,9 @@ var monthTablePlaceholder = `Descrizione
 Categoria
 Importo
 Eseguito
-
-
-
+Bolletta internet MM/YY
+Bollette
+50
 `
 
 func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
