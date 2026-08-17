@@ -21,7 +21,7 @@ var sumListTemplate string
 
 //go:embed templates/copy-month-table.html
 var copyMonthTableTemplate string
-var monthTablePlaceholder = `Descrizione
+var monthTablePlaceholderPlain = `Descrizione
 Categoria
 Importo
 Eseguito
@@ -29,6 +29,28 @@ Bolletta internet MM/YY
 Bollette
 50
 `
+var monthTablePlaceholderHTML = `<table>
+  <colgroup>
+    <col style="width: 421px;">
+    <col style="width: 123px;">
+    <col style="width: 96px;">
+    <col style="width: 96px;">
+  </colgroup>
+  <tbody>
+    <tr>
+      <th data-colwidth="421"><p dir="auto">Descrizione</p></th>
+      <th data-colwidth="123"><p dir="auto">Categoria</p></th>
+      <th data-colwidth="96"><p dir="auto">Importo</p></th>
+      <th data-colwidth="96"><p dir="auto">Eseguito</p></th>
+    </tr>
+    <tr>
+      <td data-colwidth="421"><p dir="auto">Bolletta internet 08/26</p></td>
+      <td data-colwidth="123"><p dir="auto">Bollette</p></td>
+      <td data-colwidth="96"><p dir="auto">50</p></td>
+      <td data-colwidth="96"><p dir="auto"></p></td>
+    </tr>
+  </tbody>
+</table>`
 
 func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -47,8 +69,10 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 		template = sumListTemplate
 	case "copy_month_table":
 		template = copyMonthTableTemplate
-		jsonBytes, _ := json.Marshal(monthTablePlaceholder)
-		template = strings.ReplaceAll(template, "\"{placeholder}\"", string(jsonBytes))
+		jsonBytes, _ := json.Marshal(monthTablePlaceholderPlain)
+		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
+		jsonBytes, _ = json.Marshal(monthTablePlaceholderHTML)
+		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
 	default:
 		http.Error(w, "Template non trovato", http.StatusNotFound)
 		return
