@@ -19,8 +19,9 @@ var calculatorTemplate string
 //go:embed templates/sum-list.html
 var sumListTemplate string
 
-//go:embed templates/copy-month-table.html
-var copyMonthTableTemplate string
+//go:embed templates/copy-text.html
+var copyTextTemplate string
+var monthTablePlaceholderTitle = "Copia template del mese negli appunti"
 var monthTablePlaceholderPlain = `Descrizione
 Categoria
 Importo
@@ -68,8 +69,10 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 	case "sum_list":
 		template = sumListTemplate
 	case "copy_month_table":
-		template = copyMonthTableTemplate
-		jsonBytes, _ := json.Marshal(monthTablePlaceholderPlain)
+		template = copyTextTemplate
+		jsonBytes, _ := json.Marshal(monthTablePlaceholderTitle)
+		template = strings.ReplaceAll(template, "\"{placeholderTitle}\"", string(jsonBytes))
+		jsonBytes, _ = json.Marshal(monthTablePlaceholderPlain)
 		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
 		jsonBytes, _ = json.Marshal(monthTablePlaceholderHTML)
 		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
