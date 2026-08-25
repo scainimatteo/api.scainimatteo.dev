@@ -1,12 +1,13 @@
 package services
 
 type Config struct {
-	DB                   DB      `json:"db"`
-	VikunjaPushoverToken string  `json:"vikunja_pushover_token"`
-	Vikunja              Vikunja `json:"vikunja"`
-	Firefly              Firefly `json:"firefly"`
-	PushoverUser         string  `json:"pushover_user"`
-	Port                 string  `json:"port"`
+	DB                   DB                   `json:"db"`
+	VikunjaPushoverToken string               `json:"vikunja_pushover_token"`
+	Vikunja              Vikunja              `json:"vikunja"`
+	Firefly              Firefly              `json:"firefly"`
+	PushoverUser         string               `json:"pushover_user"`
+	Port                 string               `json:"port"`
+	GrandiGiochiniGiorno GrandiGiochiniGiorno `json:"grandi_giochini_giorno"`
 }
 
 type DB struct {
@@ -33,4 +34,11 @@ type Firefly struct {
 type FireflySources struct {
 	Bper   string `json:"bper"`
 	Ticket string `json:"ticket"`
+}
+
+type GrandiGiochiniGiorno struct {
+	Dictionary             string `json:"dictionaryUrl"`
+	RestCountriesAPIKey    string `json:"restCountriesApiKey"`
+	RestCountriesURL       string `json:"restCountriesUrl"`
+	RestCountriesPageLimit int    `json:"restCountriesPageLimit"`
 }

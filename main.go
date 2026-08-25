@@ -8,8 +8,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 
 	"api.scainimatteo.dev/firefly"
+	grandigiochinigiorno "api.scainimatteo.dev/grandi-giochini-giorno"
 	"api.scainimatteo.dev/outline"
 	"api.scainimatteo.dev/services"
 	"api.scainimatteo.dev/vikunja"
@@ -50,6 +52,9 @@ func main() {
 	outlineService := outline.OutlineService{
 		Config: config,
 	}
+	grandiGiochiniGiornoService := grandigiochinigiorno.GrandiGiochiniGiornoService{
+		Config: config,
+	}
 
 	http.HandleFunc("/firefly/webhook", fireflyService.HandleWebhook)
 	http.HandleFunc("/firefly/csv", fireflyService.HandleCSVImport)
@@ -60,6 +65,11 @@ func main() {
 	http.HandleFunc("/vikunja/complete_task/{id}", vikunjaService.CompleteTask)
 
 	http.HandleFunc("/outline/{templateName}", outlineService.GetTemplate)
+
+	http.HandleFunc("/grandi-giochini-giorno/parola-del-giorno/landing", handleDynamicRedirect)
+	http.HandleFunc("/grandi-giochini-giorno/parola-del-giorno", grandiGiochiniGiornoService.GetParolaDelGiorno)
+	http.HandleFunc("/grandi-giochini-giorno/bandiera-del-giorno/landing", handleDynamicRedirect)
+	http.HandleFunc("/grandi-giochini-giorno/bandiera-del-giorno", grandiGiochiniGiornoService.GetBandieraDelGiorno)
 
 	fmt.Printf("🚀 Server in ascolto sulla porta %s...\n", config.Port)
 	log.Fatal(http.ListenAndServe(":"+config.Port, nil))
@@ -75,4 +85,18 @@ func loadConfig(filename string) error {
 
 	byteValue, _ := io.ReadAll(file)
 	return json.Unmarshal(byteValue, &config)
+}
+
+func handleDynamicRedirect(w http.ResponseWriter, r *http.Request) {
+	targetPath := path.Dir(r.URL.Path)
+
+	if targetPath == "" {
+		targetPath = "/"
+	}
+
+	if r.URL.RawQuery != "" {
+		targetPath += "?" + r.URL.RawQuery
+	}
+
+	http.Redirect(w, r, targetPath, http.StatusTemporaryRedirect)
 }
