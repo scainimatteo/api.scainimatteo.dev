@@ -116,8 +116,8 @@ func (s GrandiGiochiniGiornoService) getRandomCountry() (restCountry, error) {
 
 func (s GrandiGiochiniGiornoService) fetchCountriesPage(offset int, limit int) ([]restCountry, restCountriesMeta, error) {
 	url := fmt.Sprintf(
-		"%s?limit=%d&offset=%d&response_fields=names.common,codes.alpha_2,flag.url_svg",
-		s.Config.GrandiGiochiniGiorno.RestCountriesURL, limit, offset,
+		"%s?limit=%d&offset=%d&response_fields=names.common,codes.alpha_2,flag.url_svg&%s",
+		s.Config.GrandiGiochiniGiorno.RestCountriesURL, limit, offset, s.Config.GrandiGiochiniGiorno.RestCountriesFilter,
 	)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)

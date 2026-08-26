@@ -41,4 +41,5 @@ type GrandiGiochiniGiorno struct {
 	RestCountriesAPIKey string `json:"restCountriesApiKey"`
 	RestCountriesURL    string `json:"restCountriesUrl"`
 	RestCountriesTotal  int    `json:"restCountriesTotal"`
+	RestCountriesFilter string `json:"restCountriesFilter"`
 }
