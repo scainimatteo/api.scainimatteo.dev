@@ -37,8 +37,8 @@ type FireflySources struct {
 }
 
 type GrandiGiochiniGiorno struct {
-	Dictionary             string `json:"dictionaryUrl"`
-	RestCountriesAPIKey    string `json:"restCountriesApiKey"`
-	RestCountriesURL       string `json:"restCountriesUrl"`
-	RestCountriesPageLimit int    `json:"restCountriesPageLimit"`
+	Dictionary          string `json:"dictionaryUrl"`
+	RestCountriesAPIKey string `json:"restCountriesApiKey"`
+	RestCountriesURL    string `json:"restCountriesUrl"`
+	RestCountriesTotal  int    `json:"restCountriesTotal"`
 }

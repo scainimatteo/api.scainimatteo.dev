@@ -95,43 +95,26 @@ func (s GrandiGiochiniGiornoService) GetBandieraDelGiorno(w http.ResponseWriter,
 	}
 }
 
+// getRandomCountry recupera un singolo paese a caso all'offset casuale, senza
+// interrogare prima l'API per il totale: il totale dei paesi è fisso in
+// config (RestCountriesTotal), così basta una sola chiamata a REST Countries.
 func (s GrandiGiochiniGiornoService) getRandomCountry() (restCountry, error) {
-	paesi, err := s.fetchAllCountries()
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	offset := r.Intn(s.Config.GrandiGiochiniGiorno.RestCountriesTotal)
+
+	paesi, _, err := s.fetchCountriesPage(offset, 1)
 	if err != nil {
 		return restCountry{}, err
 	}
 
 	if len(paesi) == 0 {
-		return restCountry{}, fmt.Errorf("nessun paese trovato")
+		return restCountry{}, fmt.Errorf("nessun paese trovato all'offset %d", offset)
 	}
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return paesi[r.Intn(len(paesi))], nil
+	return paesi[0], nil
 }
 
-func (s GrandiGiochiniGiornoService) fetchAllCountries() ([]restCountry, error) {
-	var tutti []restCountry
-	offset := 0
-
-	for {
-		pagina, altriDisponibili, err := s.fetchCountriesPage(offset, s.Config.GrandiGiochiniGiorno.RestCountriesPageLimit)
-		if err != nil {
-			return nil, err
-		}
-
-		tutti = append(tutti, pagina...)
-
-		if !altriDisponibili {
-			break
-		}
-
-		offset += s.Config.GrandiGiochiniGiorno.RestCountriesPageLimit
-	}
-
-	return tutti, nil
-}
-
-func (s GrandiGiochiniGiornoService) fetchCountriesPage(offset int, limit int) ([]restCountry, bool, error) {
+func (s GrandiGiochiniGiornoService) fetchCountriesPage(offset int, limit int) ([]restCountry, restCountriesMeta, error) {
 	url := fmt.Sprintf(
 		"%s?limit=%d&offset=%d&response_fields=names.common,codes.alpha_2,flag.url_svg",
 		s.Config.GrandiGiochiniGiorno.RestCountriesURL, limit, offset,
@@ -139,27 +122,27 @@ func (s GrandiGiochiniGiornoService) fetchCountriesPage(offset int, limit int) (
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, false, fmt.Errorf("errore creazione richiesta: %w", err)
+		return nil, restCountriesMeta{}, fmt.Errorf("errore creazione richiesta: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+s.Config.GrandiGiochiniGiorno.RestCountriesAPIKey)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, false, fmt.Errorf("errore download: %w", err)
+		return nil, restCountriesMeta{}, fmt.Errorf("errore download: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, false, fmt.Errorf("richiesta a REST Countries fallita con status %d", resp.StatusCode)
+		return nil, restCountriesMeta{}, fmt.Errorf("richiesta a REST Countries fallita con status %d", resp.StatusCode)
 	}
 
 	var risposta restCountriesResponse
 	err = json.NewDecoder(resp.Body).Decode(&risposta)
 	if err != nil {
-		return nil, false, fmt.Errorf("errore decodifica risposta: %w", err)
+		return nil, restCountriesMeta{}, fmt.Errorf("errore decodifica risposta: %w", err)
 	}
 
-	return risposta.Data.Objects, risposta.Data.Meta.More, nil
+	return risposta.Data.Objects, risposta.Data.Meta, nil
 }
 
 func (s GrandiGiochiniGiornoService) getRandomWord(letters int) (string, error) {
