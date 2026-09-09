@@ -24,7 +24,7 @@ var monthTablePlaceholderHTML = `<table>
       <th data-colwidth="96"><p dir="auto">Eseguito</p></th>
     </tr>
     <tr>
-      <td data-colwidth="421"><p dir="auto">Bolletta internet 08/26</p></td>
+      <td data-colwidth="421"><p dir="auto">Bolletta internet MM/YY</p></td>
       <td data-colwidth="123"><p dir="auto">Bollette</p></td>
       <td data-colwidth="96"><p dir="auto">50</p></td>
       <td data-colwidth="96"><p dir="auto"></p></td>
