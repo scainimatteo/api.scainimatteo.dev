@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"api.scainimatteo.dev/services"
 )
@@ -45,6 +46,8 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
 		jsonBytes, _ = json.Marshal(monthTablePlaceholderHTML)
 		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
+		jsonBytes, _ = json.Marshal(time.Now().Format("06/01"))
+		template = strings.ReplaceAll(template, "\"{MM/YY}\"", string(jsonBytes))
 	default:
 		http.Error(w, "Template non trovato", http.StatusNotFound)
 		return
