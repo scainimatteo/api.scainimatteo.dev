@@ -127,7 +127,6 @@ func (s FireflyService) HandleCSVImport(w http.ResponseWriter, r *http.Request) 
 		if amountFloat < 0 {
 			transaction.Type = "deposit"
 			transaction.DestinationID = s.Config.Firefly.Sources.Bper
-			transaction.SourceName = title
 		} else {
 			transaction.Type = "withdrawal"
 			transaction.SourceID = s.Config.Firefly.Sources.Bper
