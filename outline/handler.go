@@ -48,6 +48,14 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
 		jsonBytes, _ = json.Marshal(time.Now().Format("06/01"))
 		template = strings.ReplaceAll(template, "\"{MM/YY}\"", string(jsonBytes))
+	case "copy_1_1_mail":
+		var jsonBytes []byte
+		template = copyTextTemplate
+		template = strings.ReplaceAll(template, "\"{placeholderTitle}\"", oneOnOneMailPlaceholderTitle)
+		jsonBytes, _ = json.Marshal(oneOnOneMailPlaceholderPlain)
+		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
+		jsonBytes, _ = json.Marshal(oneOnOneMailPlaceholderHTML)
+		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
 	default:
 		http.Error(w, "Template non trovato", http.StatusNotFound)
 		return
