@@ -40,14 +40,15 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 		template = sumListTemplate
 	case "copy_month_table":
 		var jsonBytes []byte
+		currentMonth := time.Now().Format("01/06")
+		placeholderPlain := strings.ReplaceAll(monthTablePlaceholderPlain, "\"{MM/YY}\"", currentMonth)
+		placeholderHTML := strings.ReplaceAll(monthTablePlaceholderHTML, "\"{MM/YY}\"", currentMonth)
 		template = copyTextTemplate
 		template = strings.ReplaceAll(template, "\"{placeholderTitle}\"", monthTablePlaceholderTitle)
-		jsonBytes, _ = json.Marshal(monthTablePlaceholderPlain)
+		jsonBytes, _ = json.Marshal(placeholderPlain)
 		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
-		jsonBytes, _ = json.Marshal(monthTablePlaceholderHTML)
+		jsonBytes, _ = json.Marshal(placeholderHTML)
 		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
-		jsonBytes, _ = json.Marshal(time.Now().Format("06/01"))
-		template = strings.ReplaceAll(template, "\"{MM/YY}\"", string(jsonBytes))
 	case "copy_1_1_mail":
 		var jsonBytes []byte
 		template = copyTextTemplate
