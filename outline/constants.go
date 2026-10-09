@@ -83,10 +83,10 @@ var oneOnOneMailPlaceholderHTML = `<h3>MM/DD</h3>
 
 var weeklyActivitiesPlaceholderTitle = "Copia attività settimanali negli appunti"
 var weeklyActivitiesPlaceholderPlain = `## "{MONDAY}" → "{FRIDAY}"
-### Proposte
 
-### Effettuate
+- [ ] _Lista di attività settimanali_
 `
 var weeklyActivitiesPlaceholderHTML = `<h2>"{MONDAY}" → "{FRIDAY}"</h2>
-<h3>Proposte</h3>
-<h3>Effettuate</h3>`
+<ul class="checkbox_list">
+  <li data-type="checkbox_item"><p><em>Lista di attività settimanali</em></p></li>
+</ul>`
