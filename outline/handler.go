@@ -57,6 +57,24 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
 		jsonBytes, _ = json.Marshal(oneOnOneMailPlaceholderHTML)
 		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
+	case "attivita_settimanali":
+		var jsonBytes []byte
+		now := time.Now()
+		daysUntilMonday := (8 - int(now.Weekday())) % 7
+		monday := now.AddDate(0, 0, daysUntilMonday)
+		friday := monday.AddDate(0, 0, 4)
+		mondayText := monday.Format("02/01")
+		fridayText := friday.Format("02/01")
+		placeholderPlain := strings.ReplaceAll(weeklyActivitiesPlaceholderPlain, "\"{MONDAY}\"", mondayText)
+		placeholderPlain = strings.ReplaceAll(placeholderPlain, "\"{FRIDAY}\"", fridayText)
+		placeholderHTML := strings.ReplaceAll(weeklyActivitiesPlaceholderHTML, "\"{MONDAY}\"", mondayText)
+		placeholderHTML = strings.ReplaceAll(placeholderHTML, "\"{FRIDAY}\"", fridayText)
+		template = copyTextTemplate
+		template = strings.ReplaceAll(template, "\"{placeholderTitle}\"", weeklyActivitiesPlaceholderTitle)
+		jsonBytes, _ = json.Marshal(placeholderPlain)
+		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
+		jsonBytes, _ = json.Marshal(placeholderHTML)
+		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
 	default:
 		http.Error(w, "Template non trovato", http.StatusNotFound)
 		return

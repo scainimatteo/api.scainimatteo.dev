@@ -80,3 +80,13 @@ var oneOnOneMailPlaceholderHTML = `<h3>MM/DD</h3>
   <li><p><em>Mi piacerebbe imparare a fare analisi di performance sul database.</em></p></li>
 </ul>
 <hr>`
+
+var weeklyActivitiesPlaceholderTitle = "Copia attività settimanali negli appunti"
+var weeklyActivitiesPlaceholderPlain = `## "{MONDAY}" → "{FRIDAY}"
+### Proposte
+
+### Effettuate
+`
+var weeklyActivitiesPlaceholderHTML = `<h2>"{MONDAY}" → "{FRIDAY}"</h2>
+<h3>Proposte</h3>
+<h3>Effettuate</h3>`
