@@ -43,7 +43,7 @@ func (s VikunjaService) HandleReminderWebhook(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	s.HandleReminder(task)
+	s.HandleReminder(task, data.Data.Project.Title)
 
 	for _, label := range task.Labels {
 		switch label.Title {
@@ -184,8 +184,11 @@ func (s VikunjaService) HandleCalendar(task *Task) error {
 	return nil
 }
 
-func (s VikunjaService) HandleReminder(task *Task) {
-	title := "Reminder - " + task.Title
+func (s VikunjaService) HandleReminder(task *Task, projectTitle string) {
+	if projectTitle == "" {
+		projectTitle = "Reminder"
+	}
+	title := projectTitle + " - " + task.Title
 	message := fmt.Sprintf("https://vikunja.scainimatteo.dev/tasks/%d", task.ID)
 	description := htmlToText(task.Description)
 	if description != "" {
