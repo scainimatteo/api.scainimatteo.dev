@@ -6,10 +6,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html"
 	"log"
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"api.scainimatteo.dev/services"
@@ -185,7 +187,24 @@ func (s VikunjaService) HandleCalendar(task *Task) error {
 func (s VikunjaService) HandleReminder(task *Task) {
 	title := "Reminder - " + task.Title
 	message := fmt.Sprintf("https://vikunja.scainimatteo.dev/tasks/%d", task.ID)
+	description := htmlToText(task.Description)
+	if description != "" {
+		message = description + "\n\n" + message
+	}
 	s.Pushover.Send(title, message, s.Config.VikunjaPushoverToken)
+}
+
+func htmlToText(content string) string {
+	lineBreaks := regexp.MustCompile(`(?i)<br\s*/?>|</(p|div|li|h[1-6])>`)
+	tags := regexp.MustCompile(`<[^>]*>`)
+	emptyLines := regexp.MustCompile(`\n{3,}`)
+
+	text := lineBreaks.ReplaceAllString(content, "\n")
+	text = tags.ReplaceAllString(text, "")
+	text = html.UnescapeString(text)
+	text = emptyLines.ReplaceAllString(text, "\n\n")
+
+	return strings.TrimSpace(text)
 }
 
 func (s VikunjaService) CompleteTask(w http.ResponseWriter, r *http.Request) {
