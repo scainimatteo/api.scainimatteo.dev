@@ -85,8 +85,15 @@ var weeklyActivitiesPlaceholderTitle = "Copia attività settimanali negli appunt
 var weeklyActivitiesPlaceholderPlain = `## "{MONDAY}" → "{FRIDAY}"
 
 - [ ] _Lista di attività settimanali_
+
+### Weekly Dev Sync "{MONDAY}"
+- _Lista di note del Weekly Dev Sync_
 `
 var weeklyActivitiesPlaceholderHTML = `<h2>"{MONDAY}" → "{FRIDAY}"</h2>
 <ul class="checkbox_list">
   <li data-type="checkbox_item"><p><em>Lista di attività settimanali</em></p></li>
+</ul>
+<h3>Weekly Dev Sync "{MONDAY}"</h3>
+<ul>
+  <li><p><em>Lista di note del Weekly Dev Sync</em></p></li>
 </ul>`
