@@ -32,8 +32,12 @@ var monthTablePlaceholderHTML = `<table>
   </tbody>
 </table>`
 
-var oneOnOneMailPlaceholderTitle = "Copia mail 1:1 negli appunti"
-var oneOnOneMailPlaceholderPlain = `### MM/DD
+var oneOnOneOdgPlaceholderTitle = "Copia OdG 1:1 negli appunti"
+
+// true: l'1:1 cade il mercoledì delle settimane ISO dispari; false: delle settimane pari
+var oneOnOneOddWeek = true
+
+var oneOnOneOdgPlaceholderPlain = `### "{MM/DD}"
 
 #### Ostacoli
 
@@ -58,7 +62,7 @@ var oneOnOneMailPlaceholderPlain = `### MM/DD
 
 ---
 `
-var oneOnOneMailPlaceholderHTML = `<h3>MM/DD</h3>
+var oneOnOneOdgPlaceholderHTML = `<h3>"{MM/DD}"</h3>
 <h4>Ostacoli</h4>
 <ul>
   <li><p><em>Il rilascio di X è fermo da martedì: aspetto risposta dal partner, intanto valuto un workaround.</em></p></li>
@@ -80,6 +84,21 @@ var oneOnOneMailPlaceholderHTML = `<h3>MM/DD</h3>
   <li><p><em>Mi piacerebbe imparare a fare analisi di performance sul database.</em></p></li>
 </ul>
 <hr>`
+
+var oneOnOneMailPlaceholderTitle = "Copia mail 1:1 negli appunti"
+var oneOnOneMailPlaceholderPlain = `OdG del meeting 1:1 del "{DD/MM}"
+Ciao Andrea,
+di seguito ti mando l'OdG del meeting 1:1 di mercoledì.
+
+[OdG]
+
+A mercoledì!
+Matteo
+`
+var oneOnOneMailPlaceholderHTML = `<p>OdG del meeting 1:1 del "{DD/MM}"</p>
+<p>Ciao Andrea,<br>di seguito ti mando l'OdG del meeting 1:1 di mercoledì.</p>
+<p>[OdG]</p>
+<p>A mercoledì!<br>Matteo</p>`
 
 var weeklyActivitiesPlaceholderTitle = "Copia attività settimanali negli appunti"
 var weeklyActivitiesPlaceholderPlain = `## "{MONDAY}" → "{FRIDAY}"

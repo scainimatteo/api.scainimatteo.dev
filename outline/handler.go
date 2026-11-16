@@ -49,13 +49,29 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
 		jsonBytes, _ = json.Marshal(placeholderHTML)
 		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
+	case "copy_1_1_odg":
+		var jsonBytes []byte
+		oneOnOneDate := nextOneOnOneWednesday(time.Now())
+		oneOnOneDateText := oneOnOneDate.Format("01/02")
+		placeholderPlain := strings.ReplaceAll(oneOnOneOdgPlaceholderPlain, "\"{MM/DD}\"", oneOnOneDateText)
+		placeholderHTML := strings.ReplaceAll(oneOnOneOdgPlaceholderHTML, "\"{MM/DD}\"", oneOnOneDateText)
+		template = copyTextTemplate
+		template = strings.ReplaceAll(template, "\"{placeholderTitle}\"", oneOnOneOdgPlaceholderTitle)
+		jsonBytes, _ = json.Marshal(placeholderPlain)
+		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
+		jsonBytes, _ = json.Marshal(placeholderHTML)
+		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
 	case "copy_1_1_mail":
 		var jsonBytes []byte
+		oneOnOneDate := nextOneOnOneWednesday(time.Now())
+		oneOnOneDateText := oneOnOneDate.Format("02/01")
+		placeholderPlain := strings.ReplaceAll(oneOnOneMailPlaceholderPlain, "\"{DD/MM}\"", oneOnOneDateText)
+		placeholderHTML := strings.ReplaceAll(oneOnOneMailPlaceholderHTML, "\"{DD/MM}\"", oneOnOneDateText)
 		template = copyTextTemplate
 		template = strings.ReplaceAll(template, "\"{placeholderTitle}\"", oneOnOneMailPlaceholderTitle)
-		jsonBytes, _ = json.Marshal(oneOnOneMailPlaceholderPlain)
+		jsonBytes, _ = json.Marshal(placeholderPlain)
 		template = strings.ReplaceAll(template, "\"{placeholderPlain}\"", string(jsonBytes))
-		jsonBytes, _ = json.Marshal(oneOnOneMailPlaceholderHTML)
+		jsonBytes, _ = json.Marshal(placeholderHTML)
 		template = strings.ReplaceAll(template, "\"{placeholderHTML}\"", string(jsonBytes))
 	case "attivita_settimanali":
 		var jsonBytes []byte
@@ -82,4 +98,17 @@ func (s OutlineService) GetTemplate(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(template))
+}
+
+// nextOneOnOneWednesday restituisce il primo mercoledì a partire da now (incluso)
+// la cui settimana ISO ha la parità indicata da oneOnOneOddWeek.
+func nextOneOnOneWednesday(now time.Time) time.Time {
+	daysUntilWednesday := (int(time.Wednesday) - int(now.Weekday()) + 7) % 7
+	wednesday := now.AddDate(0, 0, daysUntilWednesday)
+	_, week := wednesday.ISOWeek()
+	isOddWeek := week%2 == 1
+	if isOddWeek != oneOnOneOddWeek {
+		wednesday = wednesday.AddDate(0, 0, 7)
+	}
+	return wednesday
 }
